@@ -33,6 +33,15 @@ class EnvironmentVariables {
   DB_NAME: string;
   @IsBoolean()
   DB_SYNC: boolean = false;
+
+  @IsNumber()
+  SECURITY_PASSWORD_SALT_SIZE: number = 128;
+  @IsNumber()
+  SECURITY_PASSWORD_KEY_SIZE: number = 512;
+  @IsNumber()
+  SECURITY_PASSWORD_ITERATIONS: number = 2000;
+  @IsString()
+  SECURYTY_PASSWORD_SECRET_KEY: string;
 }
 
 export function validate(config: Record<string, unknown>) {
