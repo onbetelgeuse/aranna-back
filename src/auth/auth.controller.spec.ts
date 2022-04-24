@@ -1,18 +1,27 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { anything, instance, mock, verify } from 'ts-mockito';
 import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { CreateUserDto } from './user/dto/create-user.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
+  let authService: AuthService;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
-    }).compile();
-
-    controller = module.get<AuthController>(AuthController);
+    authService = mock(AuthService);
+    controller = new AuthController(instance(authService));
   });
 
-  it('should be defined', () => {
+  it('1) should be defined', () => {
+    // verify
     expect(controller).toBeDefined();
+  });
+  it('2) should register', async () => {
+    // prepare
+    const user: CreateUserDto = {} as CreateUserDto;
+    // execute
+    await controller.register(user);
+    // verify
+    verify(authService.register(anything())).once();
   });
 });
