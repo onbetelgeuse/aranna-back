@@ -20,19 +20,31 @@ export class UserService {
       const entity: User = await this.userRepository.findByEmail(email);
       return UserDto.fromEntity(entity);
     }
-
     this.logger.error('Email cannot be null or undefined.');
     throw new BadRequestException('Email cannot be null or undefined.');
   }
 
-  public async createUser(user: CreateUserDto): Promise<UserDto> {
-    const entity: User = CreateUserDto.toEntity(user);
-    if (user.password) {
-      const securityPassword: SecurityPasswordResult =
-        this.securityPasswordService.generate(user.password);
-      entity.setCredentials(securityPassword);
+  public async findById(id: number): Promise<UserDto> {
+    if (id) {
+      const entity: User = await this.userRepository.findOne(id);
+      return UserDto.fromEntity(entity);
     }
-    const createdEntity: User = await this.userRepository.save(entity);
-    return UserDto.fromEntity(createdEntity);
+    this.logger.error('Id cannot be null or undefined.');
+    throw new BadRequestException('Id cannot be null or undefined.');
+  }
+
+  public async createUser(user: CreateUserDto): Promise<UserDto> {
+    if (user) {
+      const entity: User = CreateUserDto.toEntity(user);
+      if (user.password) {
+        const securityPassword: SecurityPasswordResult =
+          this.securityPasswordService.generate(user.password);
+        entity.setCredentials(securityPassword);
+      }
+      const createdEntity: User = await this.userRepository.save(entity);
+      return UserDto.fromEntity(createdEntity);
+    }
+    this.logger.error('User cannot be null or undefined.');
+    throw new BadRequestException('User cannot be null or undefined.');
   }
 }
