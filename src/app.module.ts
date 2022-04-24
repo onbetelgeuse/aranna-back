@@ -1,19 +1,37 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { validate } from './env.validation';
-import { DatabaseModule } from './database/database.module';
 import databaseConfig from './config/database.config';
+import securirtyPasswordConfig from './config/securirty-password.config';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [databaseConfig],
+      load: [databaseConfig, securirtyPasswordConfig],
       envFilePath: [`environments/${process.env.NODE_ENV || 'dev'}.env`],
       validate,
     }),
-    DatabaseModule,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService): TypeOrmModuleOptions => ({
+        type: 'postgres',
+        host: config.get('database.host'),
+        port: config.get('database.port'),
+        username: config.get('database.username'),
+        password: config.get('database.password'),
+        database: config.get('database.name'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: config.get('database.synchronize'),
+        logger: 'advanced-console',
+        logging: ['info', 'warn', 'log', 'query', 'error', 'schema'],
+      }),
+      inject: [ConfigService],
+    }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
