@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -50,5 +51,20 @@ export class AuthService {
     } catch (error) {
       throw error;
     }
+  }
+
+  public async validateCredentials(
+    email: string,
+    password: string,
+  ): Promise<UserDto> {
+    const user: UserDto = await this.userService.authenticate(email, password);
+    if (!user) {
+      throw new BadRequestException();
+    }
+    if (!user.enabled) {
+      this.logger.warn('User is disabled.');
+      throw new ForbiddenException('User is disabled.');
+    }
+    return user;
   }
 }
