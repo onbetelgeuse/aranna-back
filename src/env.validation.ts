@@ -2,6 +2,8 @@ import { plainToInstance } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
+  IsIn,
+  IsNotEmpty,
   IsNumber,
   IsString,
   validateSync,
@@ -42,6 +44,28 @@ class EnvironmentVariables {
   SECURITY_PASSWORD_ITERATIONS: number = 2000;
   @IsString()
   SECURYTY_PASSWORD_SECRET_KEY: string;
+
+  @IsNotEmpty()
+  JWT_ACCESS_TOKEN_SECRET_KEY: string;
+  @IsNumber()
+  JWT_ACCESS_TOKEN_EXPIRES_IN: number = 120;
+
+  @IsNotEmpty()
+  JWT_ACCESS_TOKEN_ALGORITHM: string = 'HS512';
+  @IsNotEmpty()
+  JWT_ACCESS_TOKEN_ISSUER: string;
+  @IsNotEmpty()
+  JWT_ACCESS_TOKEN_AUDIENCE: string;
+  @IsNotEmpty()
+  JWT_REFRESH_TOKEN_SECRET_KEY: string;
+  @IsNumber()
+  JWT_REFRESH_TOKEN_EXPIRES_IN: number = 604800;
+  @IsNotEmpty()
+  JWT_REFRESH_TOKEN_ALGORITHM = 'HS512';
+  @IsNotEmpty()
+  JWT_REFRESH_TOKEN_ISSUER: string;
+  @IsNotEmpty()
+  JWT_REFRESH_TOKEN_AUDIENCE: string;
 }
 
 export function validate(config: Record<string, unknown>) {

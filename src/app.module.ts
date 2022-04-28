@@ -7,6 +7,7 @@ import databaseConfig from './config/database.config';
 import securirtyPasswordConfig from './config/securirty-password.config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AuthModule } from './auth/auth.module';
       inject: [ConfigService],
     }),
     AuthModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,13 +4,17 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Column,
+  CreateDateColumn,
   Entity,
   Index,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { SecurityPasswordResult } from '../auth/security/interfaces/security-password-result';
+import { AccessToken } from './access-token.entity';
+import { RefreshToken } from './refresh-token.entity';
 import { Role } from './role.entity';
 
 @Injectable()
@@ -52,9 +56,18 @@ export class User {
   @Column({ default: false })
   external: boolean;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
   @ManyToMany(() => Role, (rel) => rel.users, { eager: true })
   @JoinTable({ name: 'user_role' })
   roles: Role[];
+
+  @OneToMany(() => AccessToken, (rel) => rel.user)
+  accessTokens: AccessToken[];
+
+  @OneToMany(() => RefreshToken, (rel) => rel.user)
+  refreshTokens: RefreshToken[];
 
   @BeforeInsert()
   @BeforeUpdate()

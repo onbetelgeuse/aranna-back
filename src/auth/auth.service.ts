@@ -5,6 +5,11 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { EntityManager } from 'typeorm';
+import { DateService } from '../common/services/date.service';
+import { LoginResponse } from './interfaces/login-response';
+import { TokensService } from './tokens/tokens.service';
 import { CreateUserDto } from './user/dto/create-user.dto';
 import { UserDto } from './user/dto/user.dto';
 import { UserService } from './user/user.service';
@@ -13,7 +18,13 @@ import { UserService } from './user/user.service';
 export class AuthService {
   private readonly logger: Logger = new Logger(AuthService.name);
 
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly dateService: DateService,
+    private readonly userService: UserService,
+    private readonly tokensService: TokensService,
+    private readonly manager: EntityManager,
+  ) {}
 
   public async register(user: CreateUserDto): Promise<UserDto> {
     try {
@@ -66,5 +77,32 @@ export class AuthService {
       throw new ForbiddenException('User is disabled.');
     }
     return user;
+  }
+
+  public async login(user: UserDto): Promise<LoginResponse> {
+    return this.manager.transaction(async (transactionalEntityManager) => {
+      const startDate: Date = this.dateService.getCurrent();
+      const expiresIn: number = this.configService.get(
+        'JWT_ACCESS_TOKEN_EXPIRES_IN',
+      );
+      const [accessToken, refreshToken]: string[] = await Promise.all([
+        this.tokensService.getAccessToken(
+          user,
+          startDate,
+          transactionalEntityManager,
+        ),
+        this.tokensService.getRefreshToken(
+          user,
+          startDate,
+          transactionalEntityManager,
+        ),
+      ]);
+      return {
+        expiresIn,
+        accessToken,
+        refreshToken,
+        user,
+      };
+    });
   }
 }
