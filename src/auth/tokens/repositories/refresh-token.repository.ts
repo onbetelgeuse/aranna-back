@@ -1,4 +1,4 @@
-import { EntityManager, EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { RefreshToken } from '../../../entities/refresh-token.entity';
 import { UserDto } from '../../user/dto/user.dto';
 
@@ -8,7 +8,6 @@ export class RefreshTokenRepository extends Repository<RefreshToken> {
     user: UserDto,
     startDate: Date,
     expiresIn: number,
-    entityManager: EntityManager,
   ): Promise<RefreshToken> {
     const entity: RefreshToken = new RefreshToken();
     entity.userId = user.id;
@@ -18,6 +17,6 @@ export class RefreshTokenRepository extends Repository<RefreshToken> {
     expires.setSeconds(expires.getSeconds() + expiresIn);
     entity.expires = expires;
 
-    return entityManager.save(entity);
+    return this.save(entity);
   }
 }

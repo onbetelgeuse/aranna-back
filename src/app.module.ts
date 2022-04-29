@@ -13,7 +13,6 @@ import { CommonModule } from './common/common.module';
   imports: [
     ConfigModule.forRoot({
       load: [databaseConfig, securirtyPasswordConfig],
-      envFilePath: [`environments/${process.env.NODE_ENV || 'dev'}.env`],
       validate,
     }),
     TypeOrmModule.forRootAsync({

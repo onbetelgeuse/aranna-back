@@ -1,4 +1,4 @@
-import { EntityManager, EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { AccessToken } from '../../../entities/access-token.entity';
 import { UserDto } from '../../user/dto/user.dto';
 
@@ -8,7 +8,6 @@ export class AccessTokenRepository extends Repository<AccessToken> {
     user: UserDto,
     startDate: Date,
     expiresIn: number,
-    entityManager: EntityManager,
   ): Promise<AccessToken> {
     const entity: AccessToken = new AccessToken();
     entity.userId = user.id;
@@ -18,6 +17,6 @@ export class AccessTokenRepository extends Repository<AccessToken> {
     expires.setSeconds(expires.getSeconds() + expiresIn);
     entity.expires = expires;
 
-    return entityManager.save(entity);
+    return this.save(entity);
   }
 }
