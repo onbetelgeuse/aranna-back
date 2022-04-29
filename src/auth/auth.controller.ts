@@ -34,6 +34,15 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  public async logout(@Req() req: RequestWithUser): Promise<void> {
+    const accessToken: string = req.headers.authorization;
+    const refreshToken: string = req.headers.refresh as string;
+    return this.authService.logout(req.user, accessToken, refreshToken);
+  }
+
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Get('authorize')
   public async authorize(@Req() req: RequestWithUser): Promise<UserDto> {

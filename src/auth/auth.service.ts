@@ -103,4 +103,23 @@ export class AuthService {
       user,
     };
   }
+  @Transaction()
+  public async logout(
+    user: UserDto,
+    accessToken: string,
+    refreshToken: string,
+    @TransactionRepository()
+    accessTokenRepo?: AccessTokenRepository,
+    @TransactionRepository()
+    refreshTokenRepo?: RefreshTokenRepository,
+  ): Promise<void> {
+    await Promise.all([
+      this.tokensService.removeAccessToken(user, accessToken, accessTokenRepo),
+      this.tokensService.removeRefreshToken(
+        user,
+        refreshToken,
+        refreshTokenRepo,
+      ),
+    ]);
+  }
 }
