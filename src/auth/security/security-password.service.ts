@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SecurityPasswordResult } from './interfaces/security-password-result';
 import * as CryptoJS from 'crypto-js';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SecurityPasswordService {
@@ -21,7 +20,7 @@ export class SecurityPasswordService {
       passwordHash: CryptoJS.PBKDF2(password, salt, {
         iterations: this.config.get('securitypassword.iterations'),
         keySize: this.config.get('securitypassword.keysize') / 32,
-        hasher: CryptoJS.algo.SHA512,
+        hasher: CryptoJS.algo.SHA256,
       }).toString(CryptoJS.enc.Base64),
     };
   }
@@ -45,7 +44,7 @@ export class SecurityPasswordService {
           {
             iterations: this.config.get('securitypassword.iterations'),
             keySize: this.config.get('securitypassword.keysize') / 32,
-            hasher: CryptoJS.algo.SHA512,
+            hasher: CryptoJS.algo.SHA256,
           },
         ).toString(CryptoJS.enc.Base64) === passwordHash
       : false;

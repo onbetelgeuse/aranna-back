@@ -47,4 +47,26 @@ export class UserService {
     this.logger.error('User cannot be null or undefined.');
     throw new BadRequestException('User cannot be null or undefined.');
   }
+
+  public async authenticate(
+    email: string,
+    password: string,
+  ): Promise<UserDto | undefined> {
+    if (!email) {
+      this.logger.error('Email cannot be null or undefined.');
+      throw new BadRequestException('Email cannot be null or undefined.');
+    }
+    if (!password) {
+      this.logger.error('Password cannot be null or undefined.');
+      throw new BadRequestException('Password cannot be null or undefined.');
+    }
+    const entity: User = await this.userRepository.findByEmail(email);
+
+    return entity?.validateCredentials(
+      password,
+      this.securityPasswordService.validate,
+    )
+      ? UserDto.fromEntity(entity)
+      : undefined;
+  }
 }
