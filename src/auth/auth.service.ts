@@ -71,7 +71,9 @@ export class AuthService {
   ): Promise<UserDto> {
     const user: UserDto = await this.userService.authenticate(email, password);
     if (!user) {
-      throw new BadRequestException();
+      throw new BadRequestException({
+        message: 'Email or password is incorrect.',
+      });
     }
     if (!user.enabled) {
       this.logger.warn('User is disabled.');
