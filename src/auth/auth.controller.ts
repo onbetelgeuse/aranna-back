@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { Authorize } from './decorators/authorize.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LoginResponse } from './interfaces/login-response';
@@ -43,7 +44,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
+  @Authorize()
   @Get('authorize')
   public async authorize(@Req() req: RequestWithUser): Promise<UserDto> {
     return req.user;
