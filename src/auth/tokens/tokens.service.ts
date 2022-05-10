@@ -9,6 +9,8 @@ import { UserService } from '../user/user.service';
 import { AccessTokenRepository } from './repositories/access-token.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 import { readFileSync } from 'fs';
+import { AuthenticatedSocket } from '../../scalable-websocket/socket-state/socket-state.adapter';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 @Injectable()
 export class TokensService {
@@ -74,17 +76,7 @@ export class TokensService {
     );
   }
 
-  public async validateAccessToken(
-    accessToken: string,
-    payload: JwtPayload,
-  ): Promise<UserDto> {
-    if (!accessToken) {
-      throw new UnauthorizedException('Access token is not set.');
-    }
-    accessToken = accessToken.split(/bearer /i).pop();
-    if (!accessToken) {
-      throw new UnauthorizedException('access token is not valid.');
-    }
+  public async validateAccessToken(payload: JwtPayload): Promise<UserDto> {
     const token: AccessToken = await this.getStoredTokenFromAccessTokenPayload(
       payload,
     );
@@ -107,17 +99,7 @@ export class TokensService {
     return user;
   }
 
-  public async validateRefreshToken(
-    refreshToken: string,
-    payload: JwtPayload,
-  ): Promise<UserDto> {
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token is not set.');
-    }
-    refreshToken = refreshToken.split(/bearer /i).pop();
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token is not valid.');
-    }
+  public async validateRefreshToken(payload: JwtPayload): Promise<UserDto> {
     const token: RefreshToken =
       await this.getStoredTokenFromRefreshTokenPayload(payload);
     if (!token) {
@@ -205,6 +187,45 @@ export class TokensService {
       throw new UnauthorizedException('Refresh token is not valid.');
     }
     await refreshTokenRepo.delete({ id: payload.jti });
+  }
+
+  public async validateAuthSocket(
+    socket: AuthenticatedSocket,
+  ): Promise<UserDto> {
+    if (!socket) {
+      throw new UnauthorizedException('Socket is not set.');
+    }
+
+    let accessToken =
+      socket.handshake.auth?.token || socket.handshake.headers?.authorization;
+    if (!accessToken) {
+      throw new UnauthorizedException('Access token is not set.');
+    }
+    if (/bearer /i.test(accessToken)) {
+      accessToken = accessToken.split(/bearer /i).pop();
+      if (!accessToken) {
+        throw new UnauthorizedException('Access token is not valid.');
+      }
+    }
+    try {
+      const payload: JwtPayload = await this.jwtService.verifyAsync<JwtPayload>(
+        accessToken,
+        {
+          audience: this.configService.get('JWT_ACCESS_TOKEN_AUDIENCE'),
+          issuer: this.configService.get('JWT_ACCESS_TOKEN_ISSUER'),
+          algorithms: [this.configService.get('JWT_ACCESS_TOKEN_ALGORITHM')],
+          publicKey: readFileSync(`${process.cwd()}/keys/jwtRS256.key.pub`),
+          ignoreExpiration: false,
+        },
+      );
+      return this.validateAccessToken(payload);
+    } catch (error: any) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      } else if (error instanceof Error) {
+        throw new UnauthorizedException(error.message, error.stack);
+      }
+    }
   }
 
   private async getStoredTokenFromRefreshTokenPayload(

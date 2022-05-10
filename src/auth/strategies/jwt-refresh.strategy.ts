@@ -18,7 +18,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
     private readonly tokensService: TokensService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromHeader('refresh'),
       secretOrKey: readFileSync(`${process.cwd()}/keys/jwtRS256.key.pub`),
       issuer: config.get('JWT_REFRESH_TOKEN_ISSUER'),
       audience: config.get('JWT_REFRESH_TOKEN_AUDIENCE'),
@@ -29,7 +29,6 @@ export class JwtRefreshStrategy extends PassportStrategy(
   }
 
   public async validate(req: Request, payload: JwtPayload): Promise<UserDto> {
-    const refreshToken: string = req.headers.refresh as string;
-    return this.tokensService.validateRefreshToken(refreshToken, payload);
+    return this.tokensService.validateRefreshToken(payload);
   }
 }

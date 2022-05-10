@@ -1,11 +1,14 @@
 import { INestApplicationContext, WebSocketAdapter } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import socketio from 'socket.io';
+import { AuthService } from '../../auth/auth.service';
+import { UserDto } from '../../auth/user/dto/user.dto';
 import { RedisPropagatorService } from '../redis-propagator/redis-propagator.service';
 import { SocketStateService } from './socket-state.service';
 
 interface TokenPayload {
   readonly userId: string;
+  readonly token?: string;
 }
 
 export interface AuthenticatedSocket extends socketio.Socket {
@@ -17,35 +20,25 @@ export class SocketStateAdapter extends IoAdapter implements WebSocketAdapter {
     private readonly app: INestApplicationContext,
     private readonly socketStateService: SocketStateService,
     private readonly redisPropagatorService: RedisPropagatorService,
+    private readonly authService: AuthService,
   ) {
     super(app);
   }
 
-  public create(port: number, options: any) {
+  public create(port: number, options: any = {}) {
     const server = super.createIOServer({ port, ...options });
     this.redisPropagatorService.injectSocketServer(server);
 
     server.use(async (socket: AuthenticatedSocket, next) => {
-      const token =
-        socket.handshake.query?.token ||
-        socket.handshake.headers?.authorization;
-
-      if (!token) {
-        socket.auth = null;
-
-        // not authenticated connection is still valid
-        // thus no error
-        return next();
-      }
-
       try {
-        // fake auth
+        const user: UserDto = await this.authService.validateAuthSocket(socket);
         socket.auth = {
-          userId: '1234',
+          userId: String(user.id),
         };
 
         return next();
       } catch (e) {
+        console.error(e);
         return next(e);
       }
     });

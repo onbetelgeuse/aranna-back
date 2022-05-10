@@ -11,8 +11,10 @@ import {
 import { AuthService } from './auth.service';
 import { Authorize } from './decorators/authorize.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { LoginResponse } from './interfaces/login-response';
+import { RefreshResponse } from './interfaces/refresh-response';
 import { RequestWithUser } from './interfaces/request-with-user';
 import { CreateUserDto } from './user/dto/create-user.dto';
 import { UserDto } from './user/dto/user.dto';
@@ -48,5 +50,13 @@ export class AuthController {
   @Get('authorize')
   public async authorize(@Req() req: RequestWithUser): Promise<UserDto> {
     return req.user;
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  @UseGuards(JwtRefreshAuthGuard)
+  public async refresh(@Req() req: RequestWithUser): Promise<RefreshResponse> {
+    const refreshToken: string = req.headers.refresh as string;
+    return this.authService.refresh(req.user, refreshToken);
   }
 }

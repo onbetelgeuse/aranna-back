@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  OnApplicationShutdown,
+  OnModuleInit,
+} from '@nestjs/common';
 import { Observable, Observer } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { RedisSocketEventSendDto } from '../redis-propagator/dto/socket-event-send.dto';
@@ -15,7 +20,7 @@ export interface RedisSubscribeMessage {
 }
 
 @Injectable()
-export class RedisService {
+export class RedisService implements OnApplicationShutdown {
   public constructor(
     @Inject(REDIS_SUBSCRIBER_CLIENT)
     private readonly redisSubscriberClient: RedisClient,
@@ -51,5 +56,10 @@ export class RedisService {
         },
       );
     });
+  }
+
+  public onApplicationShutdown() {
+    this.redisPublisherClient.disconnect();
+    this.redisSubscriberClient.disconnect();
   }
 }

@@ -28,6 +28,8 @@ export class RedisPropagatorInterceptor<T>
 
     return next.handle().pipe(
       tap((data) => {
+        console.log(data);
+        console.log(socket.handshake.headers);
         this.redisPropagatorService.propagateEvent({
           ...data,
           socketId: socket.id,
