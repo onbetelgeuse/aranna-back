@@ -8,6 +8,8 @@ import securirtyPasswordConfig from './config/securirty-password.config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
+import { ScalableWebsocketModule } from './scalable-websocket/scalable-websocket.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { CommonModule } from './common/common.module';
     }),
     AuthModule,
     CommonModule,
+    ScalableWebsocketModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

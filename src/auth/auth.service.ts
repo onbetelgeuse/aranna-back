@@ -8,7 +8,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Transaction, TransactionRepository } from 'typeorm';
 import { DateService } from '../common/services/date.service';
+import { AuthenticatedSocket } from '../scalable-websocket/socket-state/socket-state.adapter';
 import { LoginResponse } from './interfaces/login-response';
+import { RefreshResponse } from './interfaces/refresh-response';
 import { AccessTokenRepository } from './tokens/repositories/access-token.repository';
 import { RefreshTokenRepository } from './tokens/repositories/refresh-token.repository';
 import { TokensService } from './tokens/tokens.service';
@@ -123,5 +125,34 @@ export class AuthService {
         refreshTokenRepo,
       ),
     ]);
+  }
+
+  public async validateAuthSocket(
+    socket: AuthenticatedSocket,
+  ): Promise<UserDto> {
+    return this.tokensService.validateAuthSocket(socket);
+  }
+  @Transaction()
+  public async refresh(
+    user: UserDto,
+    refreshToken: string,
+    @TransactionRepository()
+    accessTokenRepo?: AccessTokenRepository,
+  ): Promise<RefreshResponse> {
+    const startDate: Date = this.dateService.getCurrent();
+    const expiresIn: number = this.configService.get(
+      'JWT_ACCESS_TOKEN_EXPIRES_IN',
+    );
+    const accessToken: string = await this.tokensService.getAccessToken(
+      user,
+      startDate,
+      accessTokenRepo,
+    );
+    return {
+      expiresIn,
+      accessToken,
+      refreshToken,
+      user,
+    };
   }
 }
