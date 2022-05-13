@@ -14,7 +14,8 @@ import { RefreshResponse } from './interfaces/refresh-response';
 import { AccessTokenRepository } from './tokens/repositories/access-token.repository';
 import { RefreshTokenRepository } from './tokens/repositories/refresh-token.repository';
 import { TokensService } from './tokens/tokens.service';
-import { CreateUserDto } from './user/dto/create-user.dto';
+import { KeycloakProfileDto } from './user/dto/keycloak-profile.dto';
+import { RegisterUserDto } from './user/dto/register-user.dto';
 import { UserDto } from './user/dto/user.dto';
 import { UserService } from './user/user.service';
 
@@ -29,7 +30,7 @@ export class AuthService {
     private readonly tokensService: TokensService,
   ) {}
 
-  public async register(user: CreateUserDto): Promise<UserDto> {
+  public async register(user: RegisterUserDto): Promise<UserDto> {
     try {
       if (!user) {
         this.logger.error('User cannot be null or undefined.');
@@ -154,5 +155,26 @@ export class AuthService {
       refreshToken,
       user,
     };
+  }
+
+  public async validateProfile(profile: KeycloakProfileDto): Promise<UserDto> {
+    if (!profile) {
+      throw new BadRequestException({
+        message: 'Profile is not set.',
+      });
+    }
+    const user: UserDto = await this.userService.findExternalByEmail(
+      profile.email,
+    );
+    if (!user) {
+      throw new BadRequestException({
+        message: 'User is not found.',
+      });
+    }
+    if (!user.enabled) {
+      this.logger.warn('User is disabled.');
+      throw new ForbiddenException('User is disabled.');
+    }
+    return user;
   }
 }

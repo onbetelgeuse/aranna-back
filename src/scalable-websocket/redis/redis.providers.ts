@@ -1,4 +1,5 @@
 import { Provider } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
 import {
@@ -10,23 +11,25 @@ export type RedisClient = Redis.Redis;
 
 export const redisProviders: Provider[] = [
   {
-    useFactory: (): RedisClient => {
+    inject: [ConfigService],
+    useFactory: (config: ConfigService): RedisClient => {
       return new Redis({
-        host: 'localhost',
-        port: 6379,
-        role: 'master',
-        password: 'master_admin',
+        host: config.get('redis.host'),
+        port: config.get('redis.port'),
+        role: config.get('redis.role'),
+        password: config.get('redis.password'),
       });
     },
     provide: REDIS_SUBSCRIBER_CLIENT,
   },
   {
-    useFactory: (): RedisClient => {
+    inject: [ConfigService],
+    useFactory: (config: ConfigService): RedisClient => {
       return new Redis({
-        host: 'localhost',
-        port: 6379,
-        role: 'master',
-        password: 'master_admin',
+        host: config.get('redis.host'),
+        port: config.get('redis.port'),
+        role: config.get('redis.role'),
+        password: config.get('redis.password'),
       });
     },
     provide: REDIS_PUBLISHER_CLIENT,

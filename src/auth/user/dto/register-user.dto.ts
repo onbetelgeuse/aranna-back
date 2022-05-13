@@ -10,13 +10,13 @@ import {
 import { Role } from '../../../entities/role.entity';
 import { User } from '../../../entities/user.entity';
 
-export class CreateUserDto {
+export class RegisterUserDto {
   @IsEmail({ require_tld: false })
   public readonly email: string;
 
   @IsString()
   @IsNotEmpty()
-  @ValidateIf((dto: CreateUserDto) => !dto.external)
+  @ValidateIf((dto: RegisterUserDto) => !dto.external)
   public readonly password: string;
 
   @IsString()
@@ -39,7 +39,7 @@ export class CreateUserDto {
   @IsBoolean()
   public readonly external: boolean;
 
-  public static toEntity(dto: CreateUserDto): User {
+  public static toEntity(dto: RegisterUserDto): User {
     if (dto) {
       const entity: User = new User();
       entity.email = dto.email;

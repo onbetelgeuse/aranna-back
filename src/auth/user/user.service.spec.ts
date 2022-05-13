@@ -1,7 +1,7 @@
 import { anything, capture, instance, mock, verify, when } from 'ts-mockito';
 import { User } from '../../entities/user.entity';
 import { SecurityPasswordService } from '../security/security-password.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
 
@@ -77,7 +77,7 @@ describe('UserService', () => {
 
   it('6) should CreateUser', async () => {
     // prepare
-    const user: CreateUserDto = {
+    const user: RegisterUserDto = {
       email: 'email',
       roles: ['USER'],
       firstName: 'firstname',
@@ -114,7 +114,7 @@ describe('UserService', () => {
 
   it('7) should CreateUser with external user', async () => {
     // prepare
-    const user: CreateUserDto = {
+    const user: RegisterUserDto = {
       email: 'email',
       roles: ['USER'],
       firstName: 'firstname',
@@ -150,7 +150,7 @@ describe('UserService', () => {
   });
   it('8) should CreateUser with undefined user', async () => {
     // prepare
-    const user: CreateUserDto = undefined;
+    const user: RegisterUserDto = undefined;
     when(securityPasswordService.generate(anything())).thenReturn({
       passwordHash: 'hash',
       passwordSalt: 'salt',

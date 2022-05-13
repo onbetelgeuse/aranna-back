@@ -14,4 +14,12 @@ export class UserRepository extends Repository<User> {
     this.logger.error('Email cannot be null or undefined.');
     throw new BadRequestException('Email cannot be null or undefined.');
   }
+
+  public async findExternalByEmail(email: string): Promise<User | undefined> {
+    if (email) {
+      return this.findOne({ where: { email: ILike(email), external: true } });
+    }
+    this.logger.error('Email cannot be null or undefined.');
+    throw new BadRequestException('Email cannot be null or undefined.');
+  }
 }

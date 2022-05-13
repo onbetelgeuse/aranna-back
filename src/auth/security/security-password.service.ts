@@ -3,6 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { SecurityPasswordResult } from './interfaces/security-password-result';
 import * as CryptoJS from 'crypto-js';
 
+export type TValidateFn = (
+  password: string,
+  passwordHash: string,
+  passwordSalt: string,
+) => boolean;
 @Injectable()
 export class SecurityPasswordService {
   constructor(private readonly config: ConfigService) {}
@@ -25,11 +30,7 @@ export class SecurityPasswordService {
     };
   }
 
-  public readonly validate: (
-    password: string,
-    passwordHash: string,
-    passwordSalt: string,
-  ) => boolean = (
+  public readonly validate: TValidateFn = (
     password: string,
     passwordHash: string,
     passwordSalt: string,

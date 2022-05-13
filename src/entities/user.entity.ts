@@ -13,9 +13,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { SecurityPasswordResult } from '../auth/security/interfaces/security-password-result';
+import { TValidateFn } from '../auth/security/security-password.service';
 import { AccessToken } from './access-token.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { Role } from './role.entity';
+import { UserClaim } from './user-claim.entity';
 
 @Injectable()
 @Entity('user')
@@ -59,6 +61,18 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ default: false })
+  twoFactorEnabled: boolean;
+
+  @Column({ nullable: true })
+  lockoutEnd: Date;
+
+  @Column({ default: false })
+  lockoutEnabled: boolean;
+
+  @Column({ default: 0 })
+  accessFailedCount: number;
+
   @ManyToMany(() => Role, (rel) => rel.users, { eager: true })
   @JoinTable({ name: 'user_role' })
   roles: Role[];
@@ -68,6 +82,9 @@ export class User {
 
   @OneToMany(() => RefreshToken, (rel) => rel.user)
   refreshTokens: RefreshToken[];
+
+  @OneToMany(() => UserClaim, (rel) => rel.user)
+  userClaims: UserClaim[];
 
   @BeforeInsert()
   @BeforeUpdate()
@@ -88,14 +105,7 @@ export class User {
     }
   }
 
-  validateCredentials(
-    password: string,
-    validate: (
-      password: string,
-      passwordHash: string,
-      passwordSalt: string,
-    ) => boolean,
-  ): boolean {
+  validateCredentials(password: string, validate: TValidateFn): boolean {
     return validate(password, this.passwordHash, this.passwordSalt);
   }
 }

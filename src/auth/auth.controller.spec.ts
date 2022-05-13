@@ -1,7 +1,7 @@
 import { anything, instance, mock, verify } from 'ts-mockito';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './user/dto/create-user.dto';
+import { RegisterUserDto } from './user/dto/register-user.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -18,7 +18,7 @@ describe('AuthController', () => {
   });
   it('2) should register', async () => {
     // prepare
-    const user: CreateUserDto = {} as CreateUserDto;
+    const user: RegisterUserDto = {} as RegisterUserDto;
     // execute
     await controller.register(user);
     // verify

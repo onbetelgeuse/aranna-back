@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -12,5 +12,9 @@ export class AppController {
   @Get('node_env')
   getNodeEnv(): string {
     return this.appService.getNodeEnv();
+  }
+  @Post('send-mail')
+  sendMail(): void {
+    return this.appService.sendMail('I Love U !');
   }
 }

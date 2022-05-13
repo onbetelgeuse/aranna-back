@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { User } from '../../entities/user.entity';
 import { SecurityPasswordResult } from '../security/interfaces/security-password-result';
 import { SecurityPasswordService } from '../security/security-password.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { RegisterUserDto } from './dto/register-user.dto';
 import { UserDto } from './dto/user.dto';
 import { UserRepository } from './user.repository';
 
@@ -24,6 +24,15 @@ export class UserService {
     throw new BadRequestException('Email cannot be null or undefined.');
   }
 
+  public async findExternalByEmail(email: string): Promise<UserDto> {
+    if (email) {
+      const entity: User = await this.userRepository.findExternalByEmail(email);
+      return UserDto.fromEntity(entity);
+    }
+    this.logger.error('Email cannot be null or undefined.');
+    throw new BadRequestException('Email cannot be null or undefined.');
+  }
+
   public async findById(id: number): Promise<UserDto> {
     if (id) {
       const entity: User = await this.userRepository.findOne(id);
@@ -33,9 +42,9 @@ export class UserService {
     throw new BadRequestException('Id cannot be null or undefined.');
   }
 
-  public async createUser(user: CreateUserDto): Promise<UserDto> {
+  public async createUser(user: RegisterUserDto): Promise<UserDto> {
     if (user) {
-      const entity: User = CreateUserDto.toEntity(user);
+      const entity: User = RegisterUserDto.toEntity(user);
       if (user.password) {
         const securityPassword: SecurityPasswordResult =
           this.securityPasswordService.generate(user.password);
@@ -60,7 +69,7 @@ export class UserService {
       this.logger.error('Password cannot be null or undefined.');
       throw new BadRequestException('Password cannot be null or undefined.');
     }
-    const entity: User = await this.userRepository.findByEmail(email);
+    const entity: User = await this.userRepository.findExternalByEmail(email);
 
     return entity?.validateCredentials(
       password,

@@ -14,6 +14,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { RolesGuard } from './guards/roles.guard';
+import { KeycloakOAuthGuard } from './guards/keycloak-oauth.guard';
+import { KeycloakStrategy } from './strategies/keycloak.strategy';
+import { UnauthorizedExceptionFilter } from './filters/unauthorized-exception.filter';
 
 @Module({
   imports: [
@@ -34,6 +37,9 @@ import { RolesGuard } from './guards/roles.guard';
     JwtRefreshAuthGuard,
     JwtRefreshStrategy,
     RolesGuard,
+    KeycloakOAuthGuard,
+    KeycloakStrategy,
+    UnauthorizedExceptionFilter,
   ],
 })
 export class AuthModule {}
